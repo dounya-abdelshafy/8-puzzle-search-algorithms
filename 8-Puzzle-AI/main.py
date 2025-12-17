@@ -1,8 +1,11 @@
 # main.py
-# Test Hill Climbing algorithm on the 8-Puzzle problem
+# Test Search Algorithms on the 8-Puzzle problem
 
 from Puzzle.State import State
+
+# Algorithms
 from Algorithms.Hill_Climbing import solve as hill_climbing_solve
+from Algorithms.A_Star import solve as a_star_solve
 
 
 def test_algorithm(name, solve_func, initial_state):
@@ -22,7 +25,6 @@ def test_algorithm(name, solve_func, initial_state):
         print("Time Taken (ms):", round(metrics.time_taken, 2))
 
 
-
 if __name__ == '__main__':
 
     # Initial state (solvable)
@@ -34,3 +36,6 @@ if __name__ == '__main__':
 
     print("===== Hill Climbing Test =====")
     test_algorithm("Hill Climbing", hill_climbing_solve, initial_state)
+
+    print("\n===== A* (Manhattan) Test =====")
+    test_algorithm("A*", a_star_solve, initial_state)
