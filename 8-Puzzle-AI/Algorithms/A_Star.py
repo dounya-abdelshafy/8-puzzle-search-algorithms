@@ -1,82 +1,41 @@
-﻿# astar.py
-# A* Search Algorithm for the 8-Puzzle problem
+# main.py
+# Test Search Algorithms on the 8-Puzzle problem
 
-import heapq
-from Puzzle.Puzzle import is_goal, get_successors
 from Puzzle.State import State
-from Utils.Heuristics import manhattan_distance
-from Utils.Metrics import Metrics
+
+# Algorithms
+from Algorithms.Hill_Climbing import solve as hill_climbing_solve
+from Algorithms.A_Star import solve as a_star_solve
 
 
-def solve(initial_state):
-    """
-    A* Search Algorithm
+def test_algorithm(name, solve_func, initial_state):
+    print(f"\nRunning {name}...")
+    result = solve_func(initial_state)
 
-    initial_state : State object (initial configuration of the puzzle)
-    return        : dictionary containing the solution and performance metrics
-    """
+    solution = result["solution"]
+    metrics = result["metrics"]
 
-    # نبدأ تسجيل الأداء
-    metrics = Metrics()
+    if solution is None:
+        print("No solution found.")
+    else:
+        print("Result state reached:")
+        print(solution.board)
+        print("Path Cost       :", solution.cost)
+        print("Nodes Expanded  :", metrics.nodes_expanded)
+        print("Time Taken (ms):", round(metrics.time_taken, 2))
 
-    # Priority Queue (Min-Heap)
-    # كل عنصر فيها بالشكل:
-    # (f_cost, counter, state)
-    # counter لتجنب مشاكل المقارنة بين الـ State objects
-    open_list = []
-    counter = 0
 
-    # نحسب f = g + h للحالة الابتدائية
-    start_h = manhattan_distance(initial_state.board)
-    heapq.heappush(open_list, (start_h, counter, initial_state))
+if __name__ == '__main__':
 
-    # states اللي زرناها قبل كده
-    visited = set()
+    # Initial state (solvable)
+    initial_state = State(
+        board=[8, 4, 6,
+               2, 0, 1,
+               3, 7, 5]
+    )
 
-    while open_list:
-        # نطلع الحالة اللي أقل f-cost
-        _, _, current_state = heapq.heappop(open_list)
+    print("===== Hill Climbing Test =====")
+    test_algorithm("Hill Climbing", hill_climbing_solve, initial_state)
 
-        # لو الحالة اتزارت قبل كده نعدّيها
-        if current_state in visited:
-            continue
-
-        visited.add(current_state)
-
-        # بنحسب node expanded
-        metrics.nodes_expanded += 1
-
-        # لو وصلنا للهدف
-        if is_goal(current_state):
-            metrics.stop()
-            return {
-                "solution": current_state,
-                "metrics": metrics
-            }
-
-        # نوسع العقدة الحالية
-        for next_board in get_successors(current_state):
-            next_state = State(
-                board=next_board,
-                parent=current_state,
-                move=None,                       # الحركة ممكن تتحدد لاحقًا
-                depth=current_state.depth + 1,
-                cost=current_state.cost + 1      # g(n)
-            )
-
-            if next_state not in visited:
-                # نحسب h(n)
-                h = manhattan_distance(next_state.board)
-
-                # f(n) = g(n) + h(n)
-                f = next_state.cost + h
-
-                counter += 1
-                heapq.heappush(open_list, (f, counter, next_state))
-
-    # لو مفيش حل
-    metrics.stop()
-    return {
-        "solution": None,
-        "metrics": metrics
-    }
+    print("\n===== A* (Manhattan) Test =====")
+    test_algorithm("A*", a_star_solve, initial_state)
